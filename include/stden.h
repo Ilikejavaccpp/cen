@@ -7,6 +7,7 @@
 #include "calias.h"
 #include "ccompare.h"
 #include "cstr.h"
+#include "colors.h"
 #include "clist.h"
 
 
