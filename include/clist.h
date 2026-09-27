@@ -11,6 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+    #ifdef CEN__FLAG_USE_OOP
+
+#include "../include/c___list_base.h"
+    #else
+
 typedef enum {
     CLIST_TYPE_INT = 0,
     CLIST_TYPE_FLOAT,
@@ -19,6 +25,8 @@ typedef enum {
     CLIST_TYPE_STR,
     CLIST_TYPE_PTR
 } clist_type_t;
+
+    #endif
 
 typedef struct {
     clist_type_t type;

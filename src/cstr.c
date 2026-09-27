@@ -48,6 +48,14 @@ void  str_initArena(str_t *arena, int *offset) {
     };
 }
 
+void str_resetArena(str_t *arena) {
+    if (arena == NULL)
+        return;
+
+    arena->offset = 0; /* rewind the bump pointer, this is the part that actually matters */
+    arena->buffer[0] = '\0'; /* so the arena reads as an empty C string */
+}
+
 str *str_append(str *self, const char *c_string, str_t *arena) {
     int len = strlen(c_string); /* handy dandy */
 

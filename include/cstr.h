@@ -59,6 +59,7 @@ str str_init(const char *c_literal);
 void str_destroy(str *self);
 
 void str_initArena(str_t *arena, int *offset);
+void str_resetArena(str_t *arena);
 
 str *str_append(str *self, const char *c_string, str_t *arena);
 str *str_append_heap(str *self, const char *c_string);
