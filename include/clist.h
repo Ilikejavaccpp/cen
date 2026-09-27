@@ -5,6 +5,7 @@
 #ifndef CEN__CLIST_H
 #define CEN__CLIST_H
 
+#include "../include/cbool.h"
 #include "../include/ccompare.h"
 #include "../include/calias.h"
 #include "../include/cstr.h"

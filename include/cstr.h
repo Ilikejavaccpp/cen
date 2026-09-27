@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include "cbool.h"
 #include "ccompare.h"
 #include "calias.h"
 
