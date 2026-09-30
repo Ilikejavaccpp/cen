@@ -50,10 +50,31 @@ cllist cllist_init(cllist_pool *memory_pool) {
     };
 }
 
+/* HELP */
 cllist *cllist_push(cllist *list, void *data, cllist_type_t type_of_data) {
     cllist_node_t *node = cllist_allocMemory(list->pool);
+    if (!node) return list; /* no changes */
 
-    return NULL; /* remove the fucking warning */
+    node->types[0] = type_of_data;
+    node->next = NULL;
+    node->prev = list->tail;
+
+    /* HELP */
+    switch (type_of_data) {
+        case CLIST_TYPE_INT: {
+            node->as->i = CLLIST_INT(data);
+        }
+    }
+
+    if (list->tail) {
+        list->tail->next = node;
+    } else {
+        list->head = node;
+    }
+    list->tail = node;
+    list->capacity++;
+
+    return list;
 }
 
 
