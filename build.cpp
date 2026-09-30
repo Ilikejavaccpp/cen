@@ -13,11 +13,12 @@ void build_main(int argc, char *argv[]) {
 
     std::vector<CBuildP::file_t> in = {
         "src/stden.c",
+        "src/clinked_list.c"
     };
 
     CBuildP::file_t inputfiles = CBuildP::add_files(in);
     CBuildP::file_t out_libfile = "cen"; /* change for building (i.e. build release) */
-    CBuildP::file_t out_libdir = "build/cen-v2"; /* change for building (i.e. build release) */
+    CBuildP::file_t out_libdir = "lib"; /* change for building (i.e. build release) */
 
     CBuildP::optimize({
        .compiler = CBuildP::compilers::c::clang,
