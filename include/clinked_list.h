@@ -12,11 +12,32 @@
 #include "../include/cstr.h"
 #include "../include/clist_fast.h"
 
+#include <stdint.h>
+
 #define CLLIST_NODE_SIZE 16 /* used for fast caching */
 #define CLLIST_NODE_ALIGN 64 /* 64 bytes alignment */
 #define CLLIST_MEMADDR_PTR void *
 #define CLLIST_MEMPOOL_SIZE 128 /* 128 nodes or 128 * 16 bytes = 2 KiB. very enough,
                                   made it so that you can define this to fit your needs*/
+
+#define CLLIST_DATA_INTEGER(integer) (CLLIST_MEMADDR_PTR)(intptr_t)(integer)
+#define CLLIST_DATA_CHARACTER(character) (CLLIST_MEMADDR_PTR)(uintptr_t)(character)
+#define CLLIST_DATA_FLOAT(f) (\
+    { \
+        float _tmp_f = (f); \
+        uintptr_t _tmp_ui = 0; \
+        memcpy(&_tmp_ui, &_tmp_f, sizeof(float)); \
+        (void*)_tmp_ui; \
+    }\
+    )
+#define CLLIST_DATA_DOUBLE(d) (\
+    { \
+        double _tmp_d = (d); \
+        uintptr_t _tmp_ui = 0; \
+        memcpy(&_tmp_ui, &_tmp_d, sizeof(double)); \
+        (void*)_tmp_ui; \
+    }\
+    )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -81,6 +102,8 @@ void cllist_initMemory(cllist_pool * memory_pool);
 
 cllist_node_t *cllist_allocMemory(cllist_pool *pool);
 
+/* you can push the data via first a conversion or a raw pointer (strings, string pointers,
+ * lists, etc.) */
 cllist * cllist_push(cllist *list, void *data, cllist_type_t type_of_data);
 
 
