@@ -1,7 +1,7 @@
 -- write some normal SEQUEL
 
 CREATE TABLE IF NOT EXISTS widgets (
-    id INTEGER PRIMARY KEY NOT NULL AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- implicitly NOT NULL, cannot be combined with NOT NULL
     name CHAR(255) NOT NULL,
     variable_name CHAR(255) NOT NULL,
     description TEXT, -- remember it's optional to be a bad dev and use emojis with no meaning

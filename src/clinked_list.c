@@ -8,16 +8,15 @@
 #include  <stdlib.h>
 #include "../include/clinked_list.h"
 
-void cllist_initMemory(cllist_pool *memory_pool) {
+/* carves a fresh slab and threads its nodes onto the free list */
+static cllist_mem *cllist_newSlab(void) {
     cllist_mem *mem = (cllist_mem *)malloc(sizeof(cllist_mem));
 
     if  (!mem) {
-        memory_pool->avail = NULL;
-        return;
+        return NULL;
     }
 
     mem->next_mem = NULL;
-    memory_pool->slabsd = mem; /* initialize the memory pool slab with ~2KiB in RAM */
 
     /* if this was fixed, then we could've used a shitton of sets to not
      * waste time via a O(n) for-loop
@@ -26,7 +25,46 @@ void cllist_initMemory(cllist_pool *memory_pool) {
         mem->nodes[i].next = &mem->nodes[i + 1];
     }
     mem->nodes[CLLIST_MEMPOOL_SIZE - 1].next = NULL; /* same for the tail */
+    return mem;
+}
+
+void cllist_initMemory(cllist_pool *memory_pool) {
+    /* initialize or grow: a pool without slabs gets the first one, an exhausted
+     * pool gets another appended. the slabsd chain stays intact either way, so
+     * cllist_destroyMemory can still walk it later on. */
+    cllist_mem *mem = cllist_newSlab();
+
+    if  (!mem) {
+        memory_pool->avail = NULL;
+        return;
+    }
+
+    if (memory_pool->slabsd == NULL) {
+        memory_pool->slabsd = mem; /* initialize the memory pool slab with ~2KiB in RAM */
+    } else {
+        cllist_mem *tail = memory_pool->slabsd;
+        while (tail->next_mem != NULL) {
+            tail = tail->next_mem;
+        }
+        tail->next_mem = mem;
+    }
+
     memory_pool->avail = &mem->nodes[0]; /* initialize the free node list's head */
+}
+
+void cllist_destroyMemory(cllist_pool *memory_pool) {
+    if (!memory_pool) return;
+
+    cllist_mem *mem = memory_pool->slabsd;
+    while (mem) {
+        cllist_mem *next = mem->next_mem;
+        free(mem);
+        mem = next;
+    }
+
+    /* leave the pool reusable, same state cllist_initMemory tolerates */
+    memory_pool->slabsd = NULL;
+    memory_pool->avail = NULL;
 }
 
 cllist_node_t *cllist_allocMemory(cllist_pool *pool) {

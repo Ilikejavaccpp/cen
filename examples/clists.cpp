@@ -22,7 +22,7 @@ int main() {
     clist_print(&list, CLIST_PRINT_PRETTY);
 
     /* now make a (Unrolled) linked list on the heap */
-    cllist_pool pool;
+    cllist_pool pool = {}; /* must start zeroed: cllist_initMemory reads slabsd to tell init from grow */
     cllist_initMemory(&pool);
 
     std::cout << "CPP" << ", " << "\n";

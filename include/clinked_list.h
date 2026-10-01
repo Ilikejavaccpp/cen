@@ -127,10 +127,11 @@ typedef struct {
 } cllist;
 
 cllist cllist_init(cllist_pool *memory_pool);
-void cllist_initMemory(cllist_pool * memory_pool);
+void cllist_initMemory(cllist_pool * memory_pool); /* initializes or grows, requires a zeroed pool to start */
+void cllist_destroyMemory(cllist_pool * memory_pool); /* frees every slab, the pool is dead after this */
 
 cllist_node_t *cllist_allocMemory(cllist_pool *pool);
-void cllist_freeMemory(cllist_pool *pool, cllist_node_t *node);
+void cllist_freeMemory(cllist_pool *pool, cllist_node_t *node); /* recycles one node, the pool stays usable */
 
 cllist * cllist_push(cllist *list, void *data, cllist_type_t type_of_data);
 cllist * cllist_insert(cllist *list, void *data, cllist_type_t type_of_data, u32 index); /* CHORE: change to `u64`if small */
