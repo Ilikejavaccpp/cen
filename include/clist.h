@@ -15,7 +15,7 @@
 
     #ifdef CEN__FLAG_USE_OOP
 
-#include "../include/c___list_base.h"
+#include "../include/c__list_base.h"
     #else
 
 typedef enum {
@@ -26,8 +26,6 @@ typedef enum {
     CLIST_TYPE_STR,
     CLIST_TYPE_PTR
 } clist_type_t;
-
-    #endif
 
 typedef struct {
     clist_type_t type;
@@ -41,6 +39,14 @@ typedef struct {
     } as;
 } clist_item_t;
 
+typedef enum {
+    CLIST_PRINT_ARRAY = 0,
+    CLIST_PRINT_PRETTY,
+    CLIST_PRINT_HEADING
+} clist_print_mode_t;
+
+    #endif
+
 /* clist: stores data as contiguous memory of pointers: [P1] [P2] ... -> [D1], [D2] ... */
 typedef struct {
     int size;
@@ -48,18 +54,13 @@ typedef struct {
     clist_item_t **data;
 } clist;
 
-/* clist_fast: stores data as contiguous memory of raw items: [D1] [D2] ... [Dend] */
-typedef struct {
-    int size;
-    int capacity;
-    clist_item_t *data;
-} clist_fast;
+// /* clist_fast: stores data as contiguous memory of raw items: [D1] [D2] ... [Dend] */
+// typedef struct {
+//     int size;
+//     int capacity;
+//     clist_item_t *data;
+// } clist_fast;
 
-typedef enum {
-    CLIST_PRINT_ARRAY = 0,
-    CLIST_PRINT_PRETTY,
-    CLIST_PRINT_HEADING
-} clist_print_mode_t;
 
 /* --- clist API --- */
 clist clist_init(void);
@@ -69,6 +70,13 @@ clist *clist_append_double(clist *list, double val);
 clist *clist_append_char(clist *list, char val);
 clist *clist_append_str(clist *list, const char *val);
 clist *clist_append_ptr(clist *list, void *val);
+
+clist *clist_insert_int(clist *list, int val, int index);
+clist *clist_insert_float(clist *list, float val, int index);
+clist *clist_insert_double(clist *list, double val, int index);
+clist *clist_insert_char(clist *list, char val, int index);
+clist *clist_insert_str(clist *list, const char *val, int index);
+clist *clist_insert_ptr(clist *list, void *val, int index);
 
 clist_item_t *clist_at(const clist *list, int index);
 clist_item_t **clist_next(clist_item_t **ptr); /* pointer math function */
@@ -82,20 +90,27 @@ _cmp_val clist_cmp__pointers_def(clist_item_t *self, clist_item_t *other);
 #define clist_cmp__pointers_impl(self_ptr, other_ptr)
 
 /* --- clist_fast API --- */
-clist_fast clist_fast_init(void);
-clist_fast *clist_fast_append_int(clist_fast *list, int val);
-clist_fast *clist_fast_append_float(clist_fast *list, float val);
-clist_fast *clist_fast_append_double(clist_fast *list, double val);
-clist_fast *clist_fast_append_char(clist_fast *list, char val);
-clist_fast *clist_fast_append_str(clist_fast *list, const char *val);
-clist_fast *clist_fast_append_ptr(clist_fast *list, void *val);
-
-clist_item_t *clist_fast_at(const clist_fast *list, int index);
-clist_item_t *clist_fast_next(clist_item_t *ptr); /* pointer math function */
-clist_fast clist_fast_slice(const clist_fast *list, int start, int stop, int step);
-clist_fast *clist_fast_delete(clist_fast *list, int index);
-clist_fast *clist_fast_destroy(clist_fast *list);
-void clist_fast_print(const clist_fast *list, clist_print_mode_t mode);
+// clist_fast clist_fast_init(void);
+// clist_fast *clist_fast_append_int(clist_fast *list, int val);
+// clist_fast *clist_fast_append_float(clist_fast *list, float val);
+// clist_fast *clist_fast_append_double(clist_fast *list, double val);
+// clist_fast *clist_fast_append_char(clist_fast *list, char val);
+// clist_fast *clist_fast_append_str(clist_fast *list, const char *val);
+// clist_fast *clist_fast_append_ptr(clist_fast *list, void *val);
+//
+// clist_fast *clist_fast_insert_int(clist_fast *list, int val, int index);
+// clist_fast *clist_fast_insert_float(clist_fast *list, float val, int index);
+// clist_fast *clist_fast_insert_double(clist_fast *list, double val, int index);
+// clist_fast *clist_fast_insert_char(clist_fast *list, char val, int index);
+// clist_fast *clist_fast_insert_str(clist_fast *list, const char *val, int index);
+// clist_fast *clist_fast_insert_ptr(clist_fast *list, void *val, int index);
+//
+// clist_item_t *clist_fast_at(const clist_fast *list, int index);
+// clist_item_t *clist_fast_next(clist_item_t *ptr); /* pointer math function */
+// clist_fast clist_fast_slice(const clist_fast *list, int start, int stop, int step);
+// clist_fast *clist_fast_delete(clist_fast *list, int index);
+// clist_fast *clist_fast_destroy(clist_fast *list);
+// void clist_fast_print(const clist_fast *list, clist_print_mode_t mode);
 
 #endif
 

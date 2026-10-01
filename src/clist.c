@@ -5,8 +5,12 @@ extern "C" {
 #ifndef CEN__LIST_C_H
 #define CEN__LIST_C_H
 
-#include "../include/cbool.h" // IWYU pragma: keep
-#include "../include/clist.h"
+#define CEN__FLAG_USE_OOP
+    #include "../include/cbool.h" // IWYU pragma: keep
+    #include "../include/clist.h"
+    #include "../include/clist_fast.h"
+#undef CEN__FLAG_USE_OOP
+
 #include <stdio.h>
 
 /* ==========================================================
@@ -79,6 +83,109 @@ clist *clist_append_ptr(clist *list, void *val) {
     clist_item_t *item = create_item(CLIST_TYPE_PTR);
     item->as.p = val;
     list->data[list->size++] = item;
+    return list;
+}
+
+static int clist_normalize_insert_index(const clist *list, int index) {
+    if (index < 0) index += list->size;
+    if (index < 0) index = 0;
+    if (index > list->size) index = list->size;
+    return index;
+}
+
+clist *clist_insert_int(clist *list, int val, int index) {
+    if (!list) return NULL;
+    index = clist_normalize_insert_index(list, index);
+    clist_ensure_capacity(list);
+
+    clist_item_t *item = create_item(CLIST_TYPE_INT);
+    item->as.i = val;
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t *));
+    }
+    list->data[index] = item;
+    list->size++;
+    return list;
+}
+
+clist *clist_insert_float(clist *list, float val, int index) {
+    if (!list) return NULL;
+    index = clist_normalize_insert_index(list, index);
+    clist_ensure_capacity(list);
+
+    clist_item_t *item = create_item(CLIST_TYPE_FLOAT);
+    item->as.f = val;
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t *));
+    }
+    list->data[index] = item;
+    list->size++;
+    return list;
+}
+
+clist *clist_insert_double(clist *list, double val, int index) {
+    if (!list) return NULL;
+    index = clist_normalize_insert_index(list, index);
+    clist_ensure_capacity(list);
+
+    clist_item_t *item = create_item(CLIST_TYPE_DOUBLE);
+    item->as.d = val;
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t *));
+    }
+    list->data[index] = item;
+    list->size++;
+    return list;
+}
+
+clist *clist_insert_char(clist *list, char val, int index) {
+    if (!list) return NULL;
+    index = clist_normalize_insert_index(list, index);
+    clist_ensure_capacity(list);
+
+    clist_item_t *item = create_item(CLIST_TYPE_CHAR);
+    item->as.c = val;
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t *));
+    }
+    list->data[index] = item;
+    list->size++;
+    return list;
+}
+
+clist *clist_insert_str(clist *list, const char *val, int index) {
+    if (!list) return NULL;
+    index = clist_normalize_insert_index(list, index);
+    clist_ensure_capacity(list);
+
+    clist_item_t *item = create_item(CLIST_TYPE_STR);
+    item->as.s = val ? strdup(val) : NULL;
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t *));
+    }
+    list->data[index] = item;
+    list->size++;
+    return list;
+}
+
+clist *clist_insert_ptr(clist *list, void *val, int index) {
+    if (!list) return NULL;
+    index = clist_normalize_insert_index(list, index);
+    clist_ensure_capacity(list);
+
+    clist_item_t *item = create_item(CLIST_TYPE_PTR);
+    item->as.p = val;
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t *));
+    }
+    list->data[index] = item;
+    list->size++;
     return list;
 }
 
@@ -329,6 +436,97 @@ clist_fast *clist_fast_append_ptr(clist_fast *list, void *val) {
     clist_fast_ensure_capacity(list);
     list->data[list->size].type = CLIST_TYPE_PTR;
     list->data[list->size].as.p = val;
+    list->size++;
+    return list;
+}
+
+static int clist_fast_normalize_insert_index(const clist_fast *list, int index) {
+    if (index < 0) index += list->size;
+    if (index < 0) index = 0;
+    if (index > list->size) index = list->size;
+    return index;
+}
+
+clist_fast *clist_fast_insert_int(clist_fast *list, int val, int index) {
+    if (!list) return NULL;
+    index = clist_fast_normalize_insert_index(list, index);
+    clist_fast_ensure_capacity(list);
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t));
+    }
+    list->data[index].type = CLIST_TYPE_INT;
+    list->data[index].as.i = val;
+    list->size++;
+    return list;
+}
+
+clist_fast *clist_fast_insert_float(clist_fast *list, float val, int index) {
+    if (!list) return NULL;
+    index = clist_fast_normalize_insert_index(list, index);
+    clist_fast_ensure_capacity(list);
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t));
+    }
+    list->data[index].type = CLIST_TYPE_FLOAT;
+    list->data[index].as.f = val;
+    list->size++;
+    return list;
+}
+
+clist_fast *clist_fast_insert_double(clist_fast *list, double val, int index) {
+    if (!list) return NULL;
+    index = clist_fast_normalize_insert_index(list, index);
+    clist_fast_ensure_capacity(list);
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t));
+    }
+    list->data[index].type = CLIST_TYPE_DOUBLE;
+    list->data[index].as.d = val;
+    list->size++;
+    return list;
+}
+
+clist_fast *clist_fast_insert_char(clist_fast *list, char val, int index) {
+    if (!list) return NULL;
+    index = clist_fast_normalize_insert_index(list, index);
+    clist_fast_ensure_capacity(list);
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t));
+    }
+    list->data[index].type = CLIST_TYPE_CHAR;
+    list->data[index].as.c = val;
+    list->size++;
+    return list;
+}
+
+clist_fast *clist_fast_insert_str(clist_fast *list, const char *val, int index) {
+    if (!list) return NULL;
+    index = clist_fast_normalize_insert_index(list, index);
+    clist_fast_ensure_capacity(list);
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t));
+    }
+    list->data[index].type = CLIST_TYPE_STR;
+    list->data[index].as.s = val ? strdup(val) : NULL;
+    list->size++;
+    return list;
+}
+
+clist_fast *clist_fast_insert_ptr(clist_fast *list, void *val, int index) {
+    if (!list) return NULL;
+    index = clist_fast_normalize_insert_index(list, index);
+    clist_fast_ensure_capacity(list);
+
+    if (index < list->size) {
+        memmove(&list->data[index + 1], &list->data[index], (list->size - index) * sizeof(clist_item_t));
+    }
+    list->data[index].type = CLIST_TYPE_PTR;
+    list->data[index].as.p = val;
     list->size++;
     return list;
 }
