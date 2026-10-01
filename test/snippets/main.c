@@ -14,6 +14,9 @@
 
 #define COLOR_RESET "\033[0m"
 #define COLOR_INFOX "#87daf6"
+
+/* U+232B ERASE TO THE LEFT: the standard backspace/delete glyph, NFC form */
+#define ICON_BACKSPACE "\u232B"
 /* ------------------------------------------------------------------------------------------ */
 
 str_t arena;
@@ -180,52 +183,139 @@ int main() {
         clist_fast_append_ptr(&calculator_numpad, &numpad_0);
     }
 
-    /* Operator buttons: + - * / */
+    /* Arithmetic Operators: / * - + -> 4th column of the grid
+     * - `/` -> { 300, 132 }
+     * - `*` -> { 300, 224 }
+     * - `-` -> { 300, 317 }
+     * - `+` -> { 300, 409 }
+     */
     clist_fast calculator_operators = clist_fast_init();
     {
-        clist operator_divide = clist_init();
-        add_item(&operator_divide,
+        clist operator_div = clist_init();
+        add_item(&operator_div,
             (str){"GtkWidget", .length=9}, // 1
-            (str){"button_div", .length=11}, // 2
-            (str){"Calculator button operator `/`", .length=28}, // 3
-            300, 130,            // 4, 5
+            (str){"button_div", .length=10}, // 2
+            (str){"Calculator button operator `/`", .length=29}, // 3
+            300, 132,            // 4, 5
             (str){"box", 3}, 0,  // 6, 7
             &id);
-        clist_fast_append_ptr(&calculator_operators, &operator_divide);
+        clist_fast_append_ptr(&calculator_operators, &operator_div);
     } /* `/` */
     {
-        clist operator_divide = clist_init();
-        add_item(&operator_divide,
+        clist operator_mul = clist_init();
+        add_item(&operator_mul,
             (str){"GtkWidget", .length=9}, // 1
-            (str){"button_mul", .length=11}, // 2
-            (str){"Calculator button operator `/`", .length=28}, // 3
-            394, 130,            // 4, 5
+            (str){"button_mul", .length=10}, // 2
+            (str){"Calculator button operator `*`", .length=29}, // 3
+            300, 224,            // 4, 5
             (str){"box", 3}, 0,  // 6, 7
             &id);
-        clist_fast_append_ptr(&calculator_operators, &operator_divide);
+        clist_fast_append_ptr(&calculator_operators, &operator_mul);
     } /* `*` */
     {
-        clist operator_divide = clist_init();
-        add_item(&operator_divide,
+        clist operator_sub = clist_init();
+        add_item(&operator_sub,
             (str){"GtkWidget", .length=9}, // 1
-            (str){"button_divide", .length=11}, // 2
-            (str){"Calculator button operator `/`", .length=28}, // 3
-            489, 130,            // 4, 5
+            (str){"button_sub", .length=10}, // 2
+            (str){"Calculator button operator `-`", .length=29}, // 3
+            300, 317,            // 4, 5
             (str){"box", 3}, 0,  // 6, 7
             &id);
-        clist_fast_append_ptr(&calculator_operators, &operator_divide);
+        clist_fast_append_ptr(&calculator_operators, &operator_sub);
     } /* `-` */
     {
-        clist operator_divide = clist_init();
-        add_item(&operator_divide,
+        clist operator_add = clist_init();
+        add_item(&operator_add,
             (str){"GtkWidget", .length=9}, // 1
-            (str){"button_add", .length=11}, // 2
-            (str){"Calculator button operator `/`", .length=28}, // 3
-            584, 130,            // 4, 5
+            (str){"button_add", .length=10}, // 2
+            (str){"Calculator button operator `+`", .length=29}, // 3
+            300, 409,            // 4, 5
             (str){"box", 3}, 0,  // 6, 7
             &id);
-        clist_fast_append_ptr(&calculator_operators, &operator_divide);
+        clist_fast_append_ptr(&calculator_operators, &operator_add);
     } /* `+` */
+
+    /* Clear Button -> { 16, 132 } (top-left, above the `7`) */
+    {
+        clist button_clear = clist_init();
+        add_item(&button_clear,
+            (str){"GtkWidget", .length=9}, // 1
+            (str){"button_clear", .length=12}, // 2
+            (str){"Calculator button clear `C`", .length=26}, // 3
+            16, 132,             // 4, 5
+            (str){"box", 3}, 0,  // 6, 7
+            &id);
+        clist_fast_append_ptr(&calculator_operators, &button_clear);
+    } /* `C` */
+
+    /* Parenthesis Buttons ( ) -> top row, flanking the display
+     * - `(` -> { 110, 132 }
+     * - `)` -> { 205, 132 }
+     */
+    {
+        clist button_lparen = clist_init();
+        add_item(&button_lparen,
+            (str){"GtkWidget", .length=9}, // 1
+            (str){"button_lparen", .length=13}, // 2
+            (str){"Calculator button paren `(`", .length=26}, // 3
+            110, 132,            // 4, 5
+            (str){"box", 3}, 0,  // 6, 7
+            &id);
+        clist_fast_append_ptr(&calculator_operators, &button_lparen);
+    } /* `(` */
+    {
+        clist button_rparen = clist_init();
+        add_item(&button_rparen,
+            (str){"GtkWidget", .length=9}, // 1
+            (str){"button_rparen", .length=13}, // 2
+            (str){"Calculator button paren `)`", .length=26}, // 3
+            205, 132,            // 4, 5
+            (str){"box", 3}, 0,  // 6, 7
+            &id);
+        clist_fast_append_ptr(&calculator_operators, &button_rparen);
+    } /* `)` */
+
+    /* Decimal Point -> { 110, 501 } (bottom row, right of `0`) */
+    {
+        clist button_dot = clist_init();
+        add_item(&button_dot,
+            (str){"GtkWidget", .length=9}, // 1
+            (str){"button_dot", .length=10}, // 2
+            (str){"Calculator button decimal `.`", .length=28}, // 3
+            110, 501,            // 4, 5
+            (str){"box", 3}, 0,  // 6, 7
+            &id);
+        clist_fast_append_ptr(&calculator_operators, &button_dot);
+    } /* `.` */
+
+    /* Equals Button -> { 300, 501 } (bottom-right corner) */
+    {
+        clist button_equals = clist_init();
+        add_item(&button_equals,
+            (str){"GtkWidget", .length=9}, // 1
+            (str){"button_equals", .length=13}, // 2
+            (str){"Calculator button equals `=`", .length=27}, // 3
+            300, 501,            // 4, 5
+            (str){"box", 3}, 0,  // 6, 7
+            &id);
+        clist_fast_append_ptr(&calculator_operators, &button_equals);
+    } /* `=` */
+
+    /* Backspace Button -> { 205, 501 } (bottom row, left of `=`)
+     * - icon is U+232B ERASE TO THE LEFT, the standard single-glyph
+     *   backspace/delete symbol (NFC, not ASCII art)
+     */
+    {
+        clist button_backspace = clist_init();
+        add_item(&button_backspace,
+            (str){"GtkWidget", .length=9}, // 1
+            (str){"button_backspace", .length=16}, // 2
+            (str){"Calculator button backspace `" ICON_BACKSPACE "`", .length=32}, // 3
+            205, 501,            // 4, 5
+            (str){"box", 3}, 0,  // 6, 7
+            &id);
+        clist_fast_append_ptr(&calculator_operators, &button_backspace);
+    } /* `⌫` */
 
 #pragma endregion GTkElements
 
@@ -270,6 +360,13 @@ int main() {
         clist_destroy((clist *)clist_fast_at(&calculator_numpad, i)->as.p);
     }
     clist_fast_destroy(&calculator_numpad);
+
+    for (int i = 0; i < calculator_operators.size; ++i) {
+        clist_destroy((clist *)clist_fast_at(&calculator_operators, i)->as.p);
+    }
+    clist_fast_destroy(&calculator_operators);
+
+    clist_destroy(&calculator_display);
     cllist_freeMemory(&memory, my_list.head);
 
 
