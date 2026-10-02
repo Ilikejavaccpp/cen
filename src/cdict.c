@@ -708,6 +708,24 @@ static bool dict_remove_entry(dict_entry_t *entry, dict *self) {
     return true;
 }
 
+/* existence checks, declared in cdict.h. a lookup is enough: the value is
+ * never touched, so this is read-only even though lookup is not const. */
+bool dict_has(dict *self, void *key, dict_type_t key_type) {
+    return dict_lookup(self, key, 0, key_type) != NULL;
+}
+
+bool dict_has_str(dict *self, const char *key) {
+    if (key == NULL)
+        return false;
+    return dict_lookup(self, key, strlen(key), DICT_TYPE_STR) != NULL;
+}
+
+bool dict_has_string(dict *self, str key) {
+    if (key.pointer == NULL)
+        return false;
+    return dict_lookup(self, key.pointer, (size_t)key.length, DICT_TYPE_STR) != NULL;
+}
+
 bool dict_remove(dict *self, void *key, dict_type_t key_type) {
     return dict_remove_entry(dict_lookup(self, key, 0, key_type), self);
 }
