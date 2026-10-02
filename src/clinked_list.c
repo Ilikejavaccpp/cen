@@ -103,6 +103,39 @@ cllist cllist_init(cllist_pool *memory_pool) {
     };
 }
 
+/* writes one already-punned value into a node slot, tagging it with its type.
+ * shared by push and unshift so the type dispatch lives in exactly one place. */
+static void cllist_storeValue(cllist_node_t *node, u32 slot, void *data, cllist_type_t type_of_data) {
+    node->types[slot] = type_of_data;
+
+    switch (type_of_data) {
+        case CLLIST_TYPE_INT: {
+            node->as[slot].i = CLLIST_INT(data);
+            break;
+        }
+        case CLLIST_TYPE_FLOAT: {
+            node->as[slot].f = CLLIST_FLOAT(data);
+            break;
+        }
+        case CLLIST_TYPE_DOUBLE: {
+            node->as[slot].d = CLLIST_DOUBLE(data);
+            break;
+        }
+        case CLLIST_TYPE_CHAR: {
+            node->as[slot].c = CLLIST_CHAR(data);
+            break;
+        }
+        case CLLIST_TYPE_STR: {
+            node->as[slot].str = (char *)data; /* since a `const char *` or cstr is a pointer */
+            break;
+        }
+        case CLLIST_TYPE_PTR: {
+            node->as[slot].ptr = (void *)data;
+            break;
+        }
+    }
+}
+
 cllist *cllist_push(cllist *list, void *data, cllist_type_t type_of_data) {
     cllist_node_t *node = list->tail;
 
@@ -123,34 +156,7 @@ cllist *cllist_push(cllist *list, void *data, cllist_type_t type_of_data) {
         node = new_node;
     }
 
-    node->types[node->count] = type_of_data;
-
-    switch (type_of_data) {
-        case CLLIST_TYPE_INT: {
-            node->as[node->count].i = CLLIST_INT(data);
-            break;
-        }
-        case CLLIST_TYPE_FLOAT: {
-            node->as[node->count].f = CLLIST_FLOAT(data);
-            break;
-        }
-        case CLLIST_TYPE_DOUBLE: {
-            node->as[node->count].d = CLLIST_DOUBLE(data);
-            break;
-        }
-        case CLLIST_TYPE_CHAR: {
-            node->as[node->count].c = CLLIST_CHAR(data);
-            break;
-        }
-        case CLLIST_TYPE_STR: {
-            node->as[node->count].str = (char *)data; /* since a `const char *` or cstr is a pointer */
-            break;
-        }
-        case CLLIST_TYPE_PTR: {
-            node->as[node->count].ptr = (void *)data;
-            break;
-        }
-    }
+    cllist_storeValue(node, node->count, data, type_of_data);
 
     if (node->count < 16) node->count++;
     list->capacity++;
@@ -234,6 +240,40 @@ cllist *cllist_insert(cllist *list, void *data, cllist_type_t type_of_data, u32 
     list->capacity++;
 
     return list;
+}
+
+cllist *cllist_shift(cllist *list) {
+    /* dropping the head only ever needs index 0 removed */
+    if (!list || list->capacity == 0) return list;
+    return cllist_remove(list, 0);
+}
+
+cllist *cllist_unshift(cllist *list, void *data, cllist_type_t type_of_data) {
+    /* the head node is packed to CLLIST_NODE_SIZE slots, so there is no room to
+     * slide down inside it. prepend a fresh node holding the one new value
+     * instead, which keeps this O(1) and leaves the existing nodes untouched. */
+    if (!list) return list;
+
+    cllist_node_t *new_node = cllist_allocMemory(list->pool);
+    if (!new_node) return list; /* out of pool, list is unchanged */
+
+    new_node->prev = NULL;
+    new_node->next = list->head;
+    new_node->count = 1;
+    new_node->types[0] = type_of_data;
+    cllist_storeValue(new_node, 0, data, type_of_data);
+
+    if (list->head) ((cllist_node_t *)list->head)->prev = new_node;
+    list->head = new_node;
+    if (!list->tail) list->tail = new_node; /* was empty */
+    list->capacity++;
+
+    return list;
+}
+
+cllist *cllist_pop(cllist *list) {
+    if (!list || list->capacity == 0) return list;
+    return cllist_remove(list, list->capacity - 1);
 }
 
 cllist *cllist_remove(cllist *list, u32 index) {
