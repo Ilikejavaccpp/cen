@@ -13,7 +13,7 @@ void build_main(int argc, char *argv[]) {
 
     std::vector<CBuildP::file_t> in = {
         "src/stden.c",
-        "src/clinked_list.c"
+        // "src/clinked_list.c"
     };
 
     CBuildP::file_t inputfiles = CBuildP::add_files(in);

@@ -4,8 +4,8 @@
 #ifndef CEN__STR_H
 #define CEN__STR_H 1
 
-#define CEN__STR_VERSION 20260805L
-#define CEN__STR_VERSION__UNSTABLE 20260907L
+#define CEN__STR_VERSION 20261001L
+#define CEN__STR_VERSION__UNSTABLE 20261002L
 
 #ifdef __cplusplus
 extern "C" {

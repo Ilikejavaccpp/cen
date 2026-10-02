@@ -17,7 +17,7 @@
 #define CLLIST_NODE_SIZE 16 /* used for fast caching */
 #define CLLIST_NODE_ALIGN 64 /* 64 bytes alignment */
 #define CLLIST_MEMADDR_PTR void *
-#define CLLIST_MEMPOOL_SIZE 128 /* 128 nodes or 128 * 16 bytes = 2 KiB. very enough,
+#define CLLIST_MEMPOOL_SIZE 128 /* 128 nodes or 128 * 16 bytes = 32 KiB. very enough,
                                   made it so that you can define this to fit your needs*/
 
 /* type casting macros */

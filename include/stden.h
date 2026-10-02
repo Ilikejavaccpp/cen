@@ -14,6 +14,8 @@
 #include "clinked_list.h"
 #undef CEN__FLAG_USE_OOP
 
+#include "cdict.h"
+
 #ifdef __cplusplus
     }
 #endif

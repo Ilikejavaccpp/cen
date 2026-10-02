@@ -5,3 +5,4 @@
 #include "cstr.c"
 #include "clist.c"
 #include "clinked_list.c"
+#include "cdict.c"

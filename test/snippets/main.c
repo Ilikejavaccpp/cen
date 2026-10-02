@@ -14,6 +14,7 @@
 
 #define COLOR_RESET "\033[0m"
 #define COLOR_INFOX "#87daf6"
+#define COLOR_ERROR "#ff6666"
 
 /* U+232B ERASE TO THE LEFT: the standard backspace/delete glyph, NFC form */
 #define ICON_BACKSPACE "\u232B"
@@ -387,7 +388,7 @@ int main(int argc, char **argv) {
     {
         sqlite3 *db = NULL;
         if (sqlite3_open(DB_PATH, &db) != SQLITE_OK) {
-            printf("%s[ERROR]%s : cannot open %s --> %s\n", hex_to_ansi(COLOR_INFOX, &arena, false).pointer, COLOR_RESET, DB_PATH, sqlite3_errmsg(db));
+            printf("%s[ERROR]%s : cannot open %s --> %s\n", hex_to_ansi(COLOR_ERROR, &arena, false).pointer, COLOR_RESET, DB_PATH, sqlite3_errmsg(db));
             sqlite3_close(db);
             return 1;
         }
@@ -403,13 +404,13 @@ int main(int argc, char **argv) {
         if (!has_schema) {
             char *script = read_file(SCHEMA_PATH);
             if (script == NULL) {
-                printf("%s[ERROR]%s : cannot read %s\n", hex_to_ansi(COLOR_INFOX, &arena, false).pointer, COLOR_RESET, SCHEMA_PATH);
+                printf("%s[ERROR]%s : cannot read %s\n", hex_to_ansi(COLOR_ERROR, &arena, false).pointer, COLOR_RESET, SCHEMA_PATH);
                 sqlite3_close(db);
                 return 1;
             }
             char *err = NULL;
             if (sqlite3_exec(db, script, NULL, NULL, &err) != SQLITE_OK) {
-                printf("%s[ERROR]%s : base.sql failed --> %s\n", hex_to_ansi(COLOR_INFOX, &arena, false).pointer, COLOR_RESET, err ? err : "unknown");
+                printf("%s[ERROR]%s : base.sql failed --> %s\n", hex_to_ansi(COLOR_ERROR, &arena, false).pointer, COLOR_RESET, err ? err : "unknown");
                 sqlite3_free(err);
                 free(script);
                 sqlite3_close(db);
@@ -425,14 +426,14 @@ int main(int argc, char **argv) {
          * id would survive forever. window/box are not 'GtkWidget', so the
          * base rows stay untouched. */
         if (sqlite3_exec(db, "DELETE FROM widgets WHERE name = 'GtkWidget'", NULL, NULL, NULL) != SQLITE_OK) {
-            printf("%s[ERROR]%s : cannot clear old widgets --> %s\n", hex_to_ansi(COLOR_INFOX, &arena, false).pointer, COLOR_RESET, sqlite3_errmsg(db));
+            printf("%s[ERROR]%s : cannot clear old widgets --> %s\n", hex_to_ansi(COLOR_ERROR, &arena, false).pointer, COLOR_RESET, sqlite3_errmsg(db));
             sqlite3_close(db);
             return 1;
         }
 
         sqlite3_stmt *insert = NULL;
         if (sqlite3_prepare_v2(db, WIDGET_INSERT, -1, &insert, NULL) != SQLITE_OK) {
-            printf("%s[ERROR]%s : cannot prepare insert --> %s\n", hex_to_ansi(COLOR_INFOX, &arena, false).pointer, COLOR_RESET, sqlite3_errmsg(db));
+            printf("%s[ERROR]%s : cannot prepare insert --> %s\n", hex_to_ansi(COLOR_ERROR, &arena, false).pointer, COLOR_RESET, sqlite3_errmsg(db));
             sqlite3_close(db);
             return 1;
         }
@@ -466,7 +467,7 @@ int main(int argc, char **argv) {
     {
         sqlite3 *db = NULL;
         if (sqlite3_open(DB_PATH, &db) != SQLITE_OK) {
-            printf("%s[ERROR]%s : cannot open %s --> %s\n", hex_to_ansi(COLOR_INFOX, &arena, false).pointer, COLOR_RESET, DB_PATH, sqlite3_errmsg(db));
+            printf("%s[ERROR]%s : cannot open %s --> %s\n", hex_to_ansi(COLOR_ERROR, &arena, false).pointer, COLOR_RESET, DB_PATH, sqlite3_errmsg(db));
             sqlite3_close(db);
             return 1;
         }

@@ -2,16 +2,17 @@
 
 void build_main(int argc, char **argv) {
     CBuildP::file_t in_files = CBuildP::add_files({
-        "examples/clists.c"
+        "examples/cdictionaries.c"
     });
-    CBuildP::file_t out_file = "examples/clists.exec";
-    CBuildP::file_t out_file_cpp = "examples/clists_cpp.exec";
+    CBuildP::file_t out_file = "examples/cdictionaries.exec";
+    CBuildP::file_t out_file_cpp = "examples/clists_cpp.exec"; /* CHORE: change later */
     /* This optimize is one time */
     CBuildP::optimize({
         .compiler = CBuildP::compilers::c::clang,
         .level = CBuildP::optimization::max,
         .debug = false
     });
+    CBuildP::include({ "include" });
     CBuildP::specs(in_files, out_file);
     /* This is one time */
     CBuildP::link({
