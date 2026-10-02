@@ -13,6 +13,7 @@
 #include "../include/clist_fast.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #define CLLIST_NODE_SIZE 16 /* used for fast caching */
 #define CLLIST_NODE_ALIGN 64 /* 64 bytes alignment */
@@ -63,6 +64,27 @@ union __cllist_ptrconvert {
 #define CLLIST_CHAR(p)  (((union __cllist_ptrconvert){.p_val = (p)}).c_val)
 
 #endif
+
+/* direct data-to-pointer conversions (added in e638f2f)
+ * NB: use plain `void*` rather than CLLIST_MEMADDR_PTR, which is #undef'd below. */
+#define CLLIST_DATA_INTEGER(integer)    ((void *)(intptr_t)(integer))
+#define CLLIST_DATA_CHARACTER(character) ((void *)(uintptr_t)(character))
+#define CLLIST_DATA_FLOAT(f) (\
+    { \
+        float _tmp_f = (f); \
+        uintptr_t _tmp_ui = 0; \
+        memcpy(&_tmp_ui, &_tmp_f, sizeof(float)); \
+        (void *)_tmp_ui; \
+    }\
+    )
+#define CLLIST_DATA_DOUBLE(d) (\
+    { \
+        double _tmp_d = (d); \
+        uintptr_t _tmp_ui = 0; \
+        memcpy(&_tmp_ui, &_tmp_d, sizeof(double)); \
+        (void *)_tmp_ui; \
+    }\
+    )
 
 /* --------------------------------------------------------------------------------- */
 
@@ -133,6 +155,8 @@ void cllist_destroyMemory(cllist_pool * memory_pool); /* frees every slab, the p
 cllist_node_t *cllist_allocMemory(cllist_pool *pool);
 void cllist_freeMemory(cllist_pool *pool, cllist_node_t *node); /* recycles one node, the pool stays usable */
 
+/* you can push the data via first a conversion or a raw pointer (strings, string pointers,
+ * lists, etc.) */
 cllist * cllist_push(cllist *list, void *data, cllist_type_t type_of_data);
 cllist * cllist_insert(cllist *list, void *data, cllist_type_t type_of_data, u32 index); /* CHORE: change to `u64`if small */
 cllist * cllist_shift(cllist *list); /* removes the head node and returns the new list */
