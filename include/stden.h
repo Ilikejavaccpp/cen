@@ -19,3 +19,7 @@
 #ifdef __cplusplus
     }
 #endif
+
+#ifdef __cplusplus
+    #include "cstr.hpp"
+#endif

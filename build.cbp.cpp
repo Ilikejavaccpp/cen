@@ -5,7 +5,7 @@ void build_main(int argc, char **argv) {
         "examples/cdictionaries.c"
     });
     CBuildP::file_t out_file = "examples/cdictionaries.exec";
-    CBuildP::file_t out_file_cpp = "examples/clists_cpp.exec"; /* CHORE: change later */
+    CBuildP::file_t out_file_cpp = "examples/cstrings_cpp.exec"; /* CHORE: change later */
     /* This optimize is one time */
     CBuildP::optimize({
         .compiler = CBuildP::compilers::c::clang,
@@ -27,7 +27,7 @@ void build_main(int argc, char **argv) {
     CBuildP::run(out_file, "", false);
 
     in_files = CBuildP::add_files({
-        "examples/clists.cpp"
+        "examples/cstrings.cpp"
     });
     CBuildP::optimize({
         .compiler = CBuildP::compilers::cxx::clang,
