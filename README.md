@@ -13,5 +13,6 @@ Language --> FUTURE.
 
 - better strings (stack too)
 - lists
+- dictionaries
 - sets (future)
 - color small library (API)
