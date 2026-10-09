@@ -15,6 +15,7 @@
 #undef CEN__FLAG_USE_OOP
 
 #include "cdict.h"
+#include "cdict__strk.h" /* dict strings with better key naming */
 
 #ifdef __cplusplus
     }

@@ -2,6 +2,8 @@
     extern "C" {
 #endif
 
+// TODO: fix the overwrite in @file `src/cdict.c` @func `dict_setPair()`
+
 #ifndef CEN__DICT_H
     #error "ERROR: `cdict__strk.h` should be included after `cdict.h`"
 #endif
@@ -50,9 +52,41 @@
 #define DICT_SLAB_SIZE 4096u
 #endif
 
-typedef struct {
+/* use these for STRing Key variants */
+#define DICT_KEY_INT(integer) \
+    { .integer = DICT_MEM_INT(integer), .as = 1 }
+#define DICT_KEY_STRING(string) \
+    { .pointer = (const char *)DICT_MEM_PTR(string), .as = 0 }
 
-} sdict;
+#ifndef CEN__DICT_H
+typedef struct dict dict; /* suppress lsp errors */
+typedef enum {
+    DICT_TYPE_NONE = 0, /* slot is unused or a tombstone */
+    DICT_TYPE_INT,
+    DICT_TYPE_FLOAT,
+    DICT_TYPE_DOUBLE,
+    DICT_TYPE_CHAR,
+    DICT_TYPE_STR, /* bytes are owned by the arena, never a borrowed pointer */
+    DICT_TYPE_PTR
+} dict_type_t;
+
+#endif
+
+typedef struct {
+    union {
+        const char * pointer;
+        void * integer;
+    };
+    bool as; // we can utilize it as a bit
+} dict_key_t;
+
+dict * dict_setPair(
+    dict * self,
+    dict_key_t key,
+    // whether to put val here
+    void * val, // may make ts an object (wrapped) for safety, wait.. ts allows addresses as v, good
+    dict_type_t vtype
+);
 
 #endif /* CEN__DICT__STRING_KEY_VARIANT_H */
 

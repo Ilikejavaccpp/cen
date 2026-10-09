@@ -7,6 +7,7 @@ extern "C" {
 
 #include "../include/calias.h"
 #include "../include/cdict.h"
+#include "../include/cdict__strk.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -537,6 +538,42 @@ dict *dict_set_stringt(dict *self, tstr key, tstr val) {
     return dict_set_bytes(self, key.pointer, (size_t)key.length, val.pointer, (size_t)val.length);
 }
 
+dict * dict_setPair(dict *self, dict_key_t key, void *val, dict_type_t vtype) {
+    /* 1. Check if integer mask -- this is easy, not the core buggy parts */
+    if (key.as == 1) // 1- TYPE_INT
+    {
+        dict_entry_t *entry = dict_claimSlot(self,
+            key.integer,
+            0,
+            DICT_TYPE_INT, /* 1-- int, 0-- string */
+            NULL);
+        if (entry == NULL) return NULL;
+        entry->val = val;
+        entry->val_type = (u8)vtype;
+    }
+
+    /* 2. Check if string mask -- this is the hard part and where I either
+     * fricked up a mem address or got a segfault */
+    if (key.as == 0) {
+        if (self == NULL || self->strings == NULL || key.pointer == NULL)
+            return NULL;
+
+        /* keep a copy of the string ,
+         * only cost here is std string.h's `strlen` */
+        char * key_cp = dict_arena_copyString(self->strings, key.pointer, strlen(key.pointer));
+        if (key_cp == NULL) return NULL;
+
+        bool inserted = false;
+        dict_entry_t *entry = dict_claimSlot(self, key_cp, strlen(key.pointer), DICT_TYPE_STR, &inserted);
+        if (entry != NULL && inserted)
+            self->strings->key_count++;
+        entry->val = val;
+        entry->val_type = (u8)vtype;
+    }
+
+    return self;
+}
+
 /* ======================== getters ======================== */
 
 static bool dict_get_bytes(dict *self, const char *key, size_t key_length, const char **out, size_t *out_length) {
@@ -797,18 +834,18 @@ static const char *dict_stateName(u8 state) {
 
 static void dict_printSlot(const dict_entry_t *entry, bool pretty) {
     if (entry->key_type == DICT_TYPE_STR)
-        printf("%.*s", (int)DICT_STR_LENGTH(entry->key), (const char *)entry->key);
+        printf("  \"%.*s\"", (int)DICT_STR_LENGTH(entry->key), (const char *)entry->key);
     else if (entry->key_type == DICT_TYPE_PTR)
-        printf("%p", entry->key);
+        printf("  \033[36m[%p\033[0m]", entry->key);
     else
-        printf("%ld", (long)DICT_INT(entry->key));
+        printf("  %ld", (long)DICT_INT(entry->key));
 
-    printf(" -> ");
+    printf(" \033[1;32m->\033[0m ");
 
     if (entry->val_type == DICT_TYPE_STR)
-        printf("%.*s", (int)DICT_STR_LENGTH(entry->val), (const char *)entry->val);
+        printf("\"%.*s\"", (int)DICT_STR_LENGTH(entry->val), (const char *)entry->val);
     else if (entry->val_type == DICT_TYPE_PTR)
-        printf("%p", entry->val);
+        printf("\033[36m[%p\033[0m]", entry->val);
     else
         printf("%ld", (long)DICT_INT(entry->val));
 
@@ -818,12 +855,63 @@ static void dict_printSlot(const dict_entry_t *entry, bool pretty) {
     printf("\n");
 }
 
+/* one scalar in the JSON-ish array dump: strings get single quotes, pointers
+ * get square brackets, chars get single quotes, everything else is bare. */
+static void dict_printScalar(const void *slot, u8 type) {
+    switch (type) {
+        case DICT_TYPE_STR:
+            printf("'%.*s'", (int)DICT_STR_LENGTH(slot), (const char *)slot);
+            break;
+        case DICT_TYPE_PTR:
+            printf("[%p]", (void *)slot);
+            break;
+        case DICT_TYPE_FLOAT:
+            printf("%g", (double)DICT_FLOAT(slot));
+            break;
+        case DICT_TYPE_DOUBLE:
+            printf("%g", DICT_DOUBLE(slot));
+            break;
+        case DICT_TYPE_CHAR:
+            printf("'%c'", DICT_CHAR(slot));
+            break;
+        case DICT_TYPE_INT:
+            printf("%d", DICT_INT(slot));
+            break;
+        case DICT_TYPE_NONE:
+        default:
+            printf("None");
+            break;
+    }
+}
+
+/* python-repr shaped dump: braces, one 'key': value pair per line, trailing
+ * comma. closer to a json object than the arrow form, but not valid json. */
+static void dict_printArray(const dict *self) {
+    printf("{\n");
+    for (u32 i = 0; i < self->capacity; i++) {
+        const dict_entry_t *entry = &self->entries[i];
+        if (entry->state != DICT_STATE_USED)
+            continue;
+        printf("  ");
+        dict_printScalar(entry->key, entry->key_type);
+        printf(": ");
+        dict_printScalar(entry->val, entry->val_type);
+        printf(",\n");
+    }
+    printf("}\n");
+}
+
 void dict_print(const dict *self, dict_print_mode_t mode) {
     if (self == NULL || self->entries == NULL)
         return;
 
     if (mode == DICT_PRINT_HEADING) {
         printf("key -> value\n");
+        // return;
+    }
+
+    if (mode == DICT_PRINT_ARRAY) {
+        dict_printArray(self);
         return;
     }
 
